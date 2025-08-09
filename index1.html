@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ফাটাকেষ্ট টিভি - নিউজ জেনারেটর</title>
+    <!-- বাংলা ফন্টের জন্য গুগল ফন্টস -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* বেসিক স্টাইল */
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #d32f2f;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        
+        input[type="file"] {
+            padding: 8px;
+        }
+
+        button {
+            background-color: #c62828;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Hind Siliguri', sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #b71c1c;
+        }
+        
+        #result-container {
+            margin-top: 30px;
+        }
+
+        #resultImage {
+            max-width: 100%;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            display: none; /* প্রথমে লুকানো থাকবে */
+        }
+        
+        #downloadLink {
+            display: none; /* প্রথমে লুকানো থাকবে */
+            margin-top: 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        #downloadLink:hover {
+            background-color: #218838;
+        }
+        
+        /* আপনার টেমপ্লেট ইমেজ আগে থেকে লোড করার জন্য */
+        #templateImage {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- টেমপ্লেট ছবিটি এখানে অদৃশ্যভাবে লোড করা হচ্ছে -->
+    <img id="templateImage" src="https://i.postimg.cc/0y1jp9JX/528789204-752835347498870-2718393835301015909-n.png" alt="Template">
+
+    <div class="container">
+        <h1>ফাটাকেষ্ট টিভি - নিউজ জেনারেটর</h1>
+        <p>আপনার ছবি ও শিরোনাম দিয়ে সহজেই খবর তৈরি করুন!</p>
+
+        <div class="input-group">
+            <label for="imageLoader">আপনার ছবি আপলোড করুন:</label>
+            <input type="file" id="imageLoader" name="imageLoader" accept="image/*">
+        </div>
+        
+        <div class="input-group">
+            <label for="headline">শিরোনাম লিখুন:</label>
+            <input type="text" id="headline" placeholder=" শিরোনাম লিখুন...">
+        </div>
+        
+        <div class="input-group">
+            <label for="date">তারিখ লিখুন:</label>
+            <input type="text" id="date" placeholder=" ০৫ আগস্ট, ২০২৪">
+        </div>
+        
+        <button id="generateBtn">খবর তৈরি করুন</button>
+
+        <div id="result-container">
+            <h3 id="result-title" style="display:none;">আপনার তৈরি করা ছবি:</h3>
+            <canvas id="canvas" style="display:none;"></canvas>
+            <img id="resultImage" alt="Generated News Card">
+            <br>
+            <a id="downloadLink" href="#" download="fatakestotv.png">ডাউনলোড করুন</a>
+            <p>Developed by Kawsar Moblu</p>
+        </div>
+    </div>
+
+    <script>
+        const imageLoader = document.getElementById('imageLoader');
+        const headlineInput = document.getElementById('headline');
+        const dateInput = document.getElementById('date');
+        const generateBtn = document.getElementById('generateBtn');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        const templateImage = document.getElementById('templateImage');
+        const resultImage = document.getElementById('resultImage');
+        const resultTitle = document.getElementById('result-title');
+        const downloadLink = document.getElementById('downloadLink');
+
+        const CANVAS_WIDTH = 1080;
+        const CANVAS_HEIGHT = 1080;
+
+        generateBtn.addEventListener('click', () => {
+            const userImageFile = imageLoader.files[0];
+            if (!userImageFile) {
+                alert('অনুগ্রহ করে একটি ছবি আপলোড করুন!');
+                return;
+            }
+
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                const userImage = new Image();
+                userImage.onload = function() {
+                    generateImage(userImage);
+                }
+                userImage.src = event.target.result;
+            }
+            
+            reader.readAsDataURL(userImageFile);
+        });
+        
+        // নতুন ফাংশন: লেখা একাধিক লাইনে ভাগ করার জন্য
+        function wrapText(context, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+
+            for (let n = 0; n < words.length; n++) {
+                let testLine = line + words[n] + ' ';
+                let metrics = context.measureText(testLine);
+                let testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    context.fillText(line, x, y);
+                    line = words[n] + ' ';
+                    y += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            context.fillText(line, x, y);
+        }
+
+        function generateImage(userImage) {
+            canvas.width = CANVAS_WIDTH;
+            canvas.height = CANVAS_HEIGHT;
+
+            // ১. ব্যবহারকারীর ছবি আঁকা
+            const photoX = 45;
+            const photoY = 150;
+            const photoWidth = 1000;
+            const photoHeight = 600;
+            ctx.drawImage(userImage, photoX, photoY, photoWidth, photoHeight);
+
+            // ২. টেমপ্লেট আঁকা
+            ctx.drawImage(templateImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // ৩. শিরোনাম যোগ করা (পরিবর্তিত অংশ)
+            ctx.font = "bold 55px 'Hind Siliguri'";
+            ctx.fillStyle = "white";
+            ctx.textAlign = "center";
+            const headlineText = headlineInput.value || "নমুনা শিরোনাম এখানে লেখা হবে";
+            
+            const maxWidth = 950; // শিরোনামের সর্বোচ্চ প্রস্থ
+            const lineHeight = 70;  // লাইনগুলোর মধ্যে দূরত্ব
+            const x = CANVAS_WIDTH / 2; // মাঝখানে দেখানোর জন্য
+            const y = 820; // প্রথম লাইন কোথা থেকে শুরু হবে
+            
+            // নতুন wrapText ফাংশন ব্যবহার করা হচ্ছে
+            wrapText(ctx, headlineText, x, y, maxWidth, lineHeight);
+
+            // ৪. তারিখ যোগ করা
+            ctx.font = "bold 25px 'Hind Siliguri'";
+            ctx.fillStyle = "#4a4a4a";
+            ctx.textAlign = "right";
+            const dateText = dateInput.value || "আজকের তারিখ";
+            ctx.fillText(dateText, CANVAS_WIDTH - 120, 40);
+
+            // ফলাফল দেখানো
+            resultImage.src = canvas.toDataURL('image/png');
+            resultImage.style.display = 'block';
+            
+            downloadLink.href = resultImage.src;
+            downloadLink.style.display = 'inline-block';
+            
+            resultTitle.style.display = 'block';
+        }
+        
+        templateImage.crossOrigin = "Anonymous";
+
+    </script>
+</body>
+</html>
