@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
 let supabase;
 if (supabaseUrl && supabaseServiceKey) {
@@ -58,7 +58,7 @@ module.exports = async (req, res) => {
       if (filename) {
         const { error: storageError } = await supabase
           .storage
-          .from('news-images')
+          .from('news-cards')
           .remove([filename]);
         
         if (storageError) {

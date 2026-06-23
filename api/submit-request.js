@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
 let supabase;
 if (supabaseUrl && supabaseServiceKey) {
@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase
       .storage
-      .from('news-images')
+      .from('news-cards')
       .upload(filename, buffer, {
         contentType: 'image/png',
         upsert: true
@@ -57,7 +57,7 @@ module.exports = async (req, res) => {
     // Get Public URL
     const { data: { publicUrl } } = supabase
       .storage
-      .from('news-images')
+      .from('news-cards')
       .getPublicUrl(filename);
 
     // Insert into Database
