@@ -1,0 +1,12 @@
+{
+  "name": "fatakestotv",
+  "version": "1.0.0",
+  "description": "Fatakesto TV - News Generator with Facebook Post Request System",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.43.4"
+  }
+}

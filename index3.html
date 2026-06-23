@@ -115,6 +115,33 @@
             background-color: #218838;
         }
         
+        #fbPostRequestBtn {
+            display: none;
+            background: linear-gradient(135deg, #1877f2, #1565c0);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+            font-family: 'Hind Siliguri', sans-serif;
+            font-size: 16px;
+            box-shadow: 0 4px 6px rgba(24, 119, 242, 0.2);
+            text-decoration: none;
+            margin-top: 20px;
+        }
+
+        #fbPostRequestBtn:hover {
+            background: linear-gradient(135deg, #166fe5, #0d47a1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(24, 119, 242, 0.3);
+        }
+
+        #fbPostRequestBtn:active {
+            transform: translateY(0);
+        }
+        
         /* আপনার টেমপ্লেট ইমেজ আগে থেকে লোড করার জন্য */
         #templateImage {
             display: none;
@@ -153,7 +180,10 @@
             <canvas id="canvas" style="display:none;"></canvas>
             <img id="resultImage" alt="Generated News Card">
             <br>
-            <a id="downloadLink" href="#" download="fatakestotv.png">ডাউনলোড করুন</a>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 20px; align-items: center;">
+                <a id="downloadLink" href="#" download="fatakestotv.png">ডাউনলোড করুন</a>
+                <button id="fbPostRequestBtn">ফেসবুকে পোস্টের অনুরোধ পাঠান</button>
+            </div>
             <p>Developed by Kawsar Moblu</p>
         </div>
     </div>
@@ -170,6 +200,7 @@
         const resultImage = document.getElementById('resultImage');
         const resultTitle = document.getElementById('result-title');
         const downloadLink = document.getElementById('downloadLink');
+        const fbPostRequestBtn = document.getElementById('fbPostRequestBtn');
 
         const CANVAS_WIDTH = 1080;
         const CANVAS_HEIGHT = 1080;
@@ -256,8 +287,55 @@
             downloadLink.href = resultImage.src;
             downloadLink.style.display = 'inline-block';
             
+            // পোস্ট রিকুয়েস্ট বাটন সেটআপ
+            fbPostRequestBtn.style.display = 'inline-block';
+            fbPostRequestBtn.disabled = false;
+            fbPostRequestBtn.innerText = "ফেসবুকে পোস্টের অনুরোধ পাঠান";
+            fbPostRequestBtn.style.background = "linear-gradient(135deg, #1877f2, #1565c0)";
+            fbPostRequestBtn.style.opacity = "1";
+            
             resultTitle.style.display = 'block';
         }
+        
+        fbPostRequestBtn.addEventListener('click', async () => {
+            const headline = headlineInput.value || "নমুনা শিরোনাম";
+            const date = dateInput.value || "আজকের তারিখ";
+            const image = canvas.toDataURL('image/png');
+
+            fbPostRequestBtn.disabled = true;
+            fbPostRequestBtn.innerText = "অনুরোধ পাঠানো হচ্ছে...";
+            fbPostRequestBtn.style.opacity = "0.7";
+
+            try {
+                const response = await fetch('/api/submit-request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ headline, date, image })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    alert('অনুরোধটি সফলভাবে পাঠানো হয়েছে! এডমিন এটি দেখে আমাদের পেজে পোস্ট করবেন।');
+                    fbPostRequestBtn.innerText = "অনুরোধ পাঠানো হয়েছে ✔";
+                    fbPostRequestBtn.style.background = "linear-gradient(135deg, #28a745, #218838)";
+                    fbPostRequestBtn.style.opacity = "1";
+                } else {
+                    alert('দুঃখিত, অনুরোধ পাঠাতে ব্যর্থ হয়েছে: ' + (result.error || 'অজানা ত্রুটি'));
+                    fbPostRequestBtn.disabled = false;
+                    fbPostRequestBtn.innerText = "ফেসবুকে পোস্টের অনুরোধ পাঠান";
+                    fbPostRequestBtn.style.opacity = "1";
+                }
+            } catch (error) {
+                console.error('Error submitting request:', error);
+                alert('নেটওয়ার্ক সমস্যা! অনুগ্রহ করে ইন্টারনেট কানেকশন চেক করুন।');
+                fbPostRequestBtn.disabled = false;
+                fbPostRequestBtn.innerText = "ফেসবুকে পোস্টের অনুরোধ পাঠান";
+                fbPostRequestBtn.style.opacity = "1";
+            }
+        });
         
         templateImage.crossOrigin = "Anonymous";
 
