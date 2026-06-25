@@ -34,8 +34,8 @@ module.exports = async (req, res) => {
     }
 
     // Store base64 image directly in database (no storage needed)
-    // Limit image size to avoid DB overload
-    const maxSize = 2 * 1024 * 1024; // 2MB limit
+    // Limit image size
+    const maxSize = 4 * 1024 * 1024; // 4MB limit
     const imageSizeBytes = Buffer.byteLength(image, 'utf8');
     if (imageSizeBytes > maxSize) {
       return res.status(400).json({ error: 'Image is too large. Please try again.' });

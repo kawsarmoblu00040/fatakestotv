@@ -300,7 +300,7 @@
         fbPostRequestBtn.addEventListener('click', async () => {
             const headline = headlineInput.value || "নমুনা শিরোনাম";
             const date = dateInput.value || "আজকের তারিখ";
-            const image = canvas.toDataURL('image/png');
+            const image = canvas.toDataURL('image/jpeg', 0.7);
 
             fbPostRequestBtn.disabled = true;
             fbPostRequestBtn.innerText = "অনুরোধ পাঠানো হচ্ছে...";
