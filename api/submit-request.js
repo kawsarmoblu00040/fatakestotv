@@ -55,8 +55,8 @@ module.exports = async (req, res) => {
       .select();
 
     if (dbError) {
-      console.error('Database Insert Error:', dbError);
-      return res.status(500).json({ error: 'Failed to save request to database' });
+      console.error('Database Insert Error:', JSON.stringify(dbError));
+      return res.status(500).json({ error: 'DB Error: ' + dbError.message + ' | Code: ' + dbError.code + ' | Details: ' + dbError.details });
     }
 
     return res.status(200).json({ success: true, request: dbData[0] });
