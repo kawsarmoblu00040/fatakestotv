@@ -33,41 +33,22 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Missing image or headline' });
     }
 
-    // Decode base64 image
-    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-    const buffer = Buffer.from(base64Data, 'base64');
-    
-    // Generate a unique filename
-    const filename = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.png`;
-
-    // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase
-      .storage
-      .from('news-cards')
-      .upload(filename, buffer, {
-        contentType: 'image/png',
-        upsert: true
-      });
-
-    if (uploadError) {
-      console.error('Storage Upload Error:', uploadError);
-      return res.status(500).json({ error: 'Failed to upload image to storage' });
+    // Store base64 image directly in database (no storage needed)
+    // Limit image size to avoid DB overload
+    const maxSize = 2 * 1024 * 1024; // 2MB limit
+    const imageSizeBytes = Buffer.byteLength(image, 'utf8');
+    if (imageSizeBytes > maxSize) {
+      return res.status(400).json({ error: 'Image is too large. Please try again.' });
     }
 
-    // Get Public URL
-    const { data: { publicUrl } } = supabase
-      .storage
-      .from('news-cards')
-      .getPublicUrl(filename);
-
-    // Insert into Database
+    // Insert into Database with base64 image stored directly
     const { data: dbData, error: dbError } = await supabase
       .from('post_requests')
       .insert([
         {
           headline,
           date: date || 'আজকের তারিখ',
-          image_url: publicUrl,
+          image_url: image, // Store base64 data URL directly
           status: 'pending'
         }
       ])
